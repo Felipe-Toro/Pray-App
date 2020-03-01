@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+    <q-header class="bg-transparent text-grey-9">
       <q-toolbar>
         <q-btn
           flat
@@ -11,93 +11,89 @@
           @click="leftDrawerOpen = !leftDrawerOpen"
         />
 
-        <q-toolbar-title>
-          Quasar App
+        <q-toolbar-title class="title-font">
+          <b>Pray</b>App
         </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      content-class="bg-grey-1"
-    >
-      <q-list>
-        <q-item-label
-          header
-          class="text-grey-8"
-        >
-          Essential Links
-        </q-item-label>
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered content-class="bg-grey-1 column">
+      <div class="col"></div>
+      <div class="col-auto">
+        <q-separator />
+        <q-item clickable @click="signOut">
+          <q-item-section side>
+            <q-icon name="mdi-exit-to-app" color="grey-7" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Sair</q-item-label>
+          </q-item-section>
+        </q-item>
+      </div>
     </q-drawer>
 
     <q-page-container>
       <router-view />
+      <q-page-sticky position="bottom-right" :offset="[18, 18]">
+        <q-btn fab icon="add" color="accent" @click="showNewPrayerDialog=true" />
+      </q-page-sticky>
     </q-page-container>
+
+    <q-dialog v-model="showNewPrayerDialog" full-height full-width>
+      <q-card>
+        <q-toolbar class="text-grey-9">
+          <q-btn flat round dense icon="mdi-chevron-left" v-close-popup />
+          <q-toolbar-title>Novo pedido</q-toolbar-title>
+        </q-toolbar>
+        <q-form @submit="newPrayer">
+          <q-card-section class="q-gutter-y-md">
+            <q-input
+              v-model="newPrayerTitle"
+              type="text"
+              label="Título"
+              lazy-rules
+              :rules="[val => !!val || 'Campo obrigatório']"
+              filled
+              dense
+            />
+          </q-card-section>
+
+          <!-- <div>
+            <q-btn label="Submit" type="submit" color="primary"/>
+            <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+          </div>-->
+        </q-form>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
 <script>
-import EssentialLink from 'components/EssentialLink'
-
 export default {
-  name: 'MainLayout',
+  name: "MainLayout",
 
-  components: {
-    EssentialLink
-  },
-
-  data () {
+  data() {
     return {
       leftDrawerOpen: false,
-      essentialLinks: [
-        {
-          title: 'Docs',
-          caption: 'quasar.dev',
-          icon: 'school',
-          link: 'https://quasar.dev'
-        },
-        {
-          title: 'Github',
-          caption: 'github.com/quasarframework',
-          icon: 'code',
-          link: 'https://github.com/quasarframework'
-        },
-        {
-          title: 'Discord Chat Channel',
-          caption: 'chat.quasar.dev',
-          icon: 'chat',
-          link: 'https://chat.quasar.dev'
-        },
-        {
-          title: 'Forum',
-          caption: 'forum.quasar.dev',
-          icon: 'record_voice_over',
-          link: 'https://forum.quasar.dev'
-        },
-        {
-          title: 'Twitter',
-          caption: '@quasarframework',
-          icon: 'rss_feed',
-          link: 'https://twitter.quasar.dev'
-        },
-        {
-          title: 'Facebook',
-          caption: '@QuasarFramework',
-          icon: 'public',
-          link: 'https://facebook.quasar.dev'
-        }
-      ]
+      showNewPrayerDialog: false,
+      newPrayerTitle: ""
+    };
+  },
+
+  methods: {
+    newPrayer() {},
+
+    signOut() {
+      this.$store.state.$firebase
+        .auth()
+        .signOut()
+        .then(function() {
+          // Sign-out successful.
+        })
+        .catch(function(error) {
+          // An error happened.
+        });
     }
   }
-}
+};
 </script>
