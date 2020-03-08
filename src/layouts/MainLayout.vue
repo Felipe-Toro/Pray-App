@@ -55,13 +55,33 @@
               :rules="[val => !!val || 'Campo obrigatório']"
               filled
               dense
+              hide-bottom-space
+            />
+            <q-input
+              v-model="newPrayerDescription"
+              type="textarea"
+              label="Descrição"
+              lazy-rules
+              :rules="[val => !!val || 'Campo obrigatório']"
+              filled
+              dense
+              hide-bottom-space
+            />
+            <q-select
+              v-model="newPrayerDay"
+              :options="weekDays"
+              label="Dia da Semana"
+              lazy-rules
+              :rules="[val => !!val || 'Campo obrigatório']"
+              filled
+              dense
+              hide-bottom-space
             />
           </q-card-section>
 
-          <!-- <div>
-            <q-btn label="Submit" type="submit" color="primary"/>
-            <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
-          </div>-->
+          <q-card-actions align="right" class="q-px-md">
+            <q-btn label="Criar" type="submit" color="primary" class="q-px-md" unelevated />
+          </q-card-actions>
         </q-form>
       </q-card>
     </q-dialog>
@@ -76,12 +96,55 @@ export default {
     return {
       leftDrawerOpen: false,
       showNewPrayerDialog: false,
-      newPrayerTitle: ""
+      newPrayerTitle: "",
+      newPrayerTags: [],
+      newPrayerPeople: [],
+      newPrayerDescription: "",
+      newPrayerDay: "",
+      weekDays: [
+        "Domingo",
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
+        "Sabado"
+      ]
     };
   },
 
   methods: {
-    newPrayer() {},
+    newPrayer() {
+      let user = this.$store.state.$firebase.auth().currentUser;
+      if (!user) return;
+      // Add a new document with a generated id.
+      let data = {
+          user: user.uid,
+          title: this.newPrayerTitle,
+          tags: this.newPrayerTags,
+          people: this.newPrayerPeople,
+          description: this.newPrayerDescription,
+          done: false,
+          day: this.newPrayerDay
+        }
+            this.$store.state.$db
+        .collection("prayers")
+        .add(data)
+        .then(docRef => {
+          console.log("Document written with ID: ", docRef);
+          this.newPrayerTitle = "";
+          this.newPrayerTags = [];
+          this.newPrayerPeople = [];
+          this.newPrayerDescription = "";
+
+          this.newPrayerDay = "";
+          this.showNewPrayerDialog = false;
+          this.$store.dispatch('app/addPrayer', {id:docRef.id, ...data} )
+        })
+        .catch(error => {
+          console.error("Error adding document: ", error);
+        });
+    },
 
     signOut() {
       this.$store.state.$firebase

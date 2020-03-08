@@ -62,7 +62,26 @@ export default {
   preFetch({ store, redirect }) {
     store.state.$firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
-        redirect("/home");
+        store.state.$db
+          .collection("prayers")
+          .where("user", "==", user.uid)
+          .get()
+          .then((querySnapshot)=> {
+            let array = []
+            querySnapshot.forEach(function(doc) {
+              // doc.data() is never undefined for query doc snapshots
+              console.log(doc.id, " => ", doc.data());
+              array.push({id:doc.id, ...doc.data()})
+            });
+            store.dispatch('app/setPrayers', array)
+          })
+          .catch((error) => {
+          })
+          .finally(() => {
+            redirect("/home");
+          })
+
+       
       }
     });
   },
